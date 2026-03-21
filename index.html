@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ECDSA Nonce Reuse — FlagVault CTF</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>"/>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#" class="nav-brand"><span class="bracket">[</span><span class="brand-flag">FLAG</span>VAULT<span class="bracket">]</span></a>
+  <ul class="nav-links">
+    <li><a href="#">Challenges</a></li>
+    <li><a href="#" class="active">ECDSA</a></li>
+    <li><a href="#">Scoreboard</a></li>
+  </ul>
+  <div class="nav-status"><div class="status-dot"></div>CHALLENGE LIVE</div>
+</nav>
+
+<div class="page-wrap">
+
+  <header class="page-header" data-index="C8">
+    <div class="page-eyebrow">CRYPTOGRAPHY · CHALLENGE #C8</div>
+    <h1 class="page-title"><span class="hl2">ECDSA</span> <span class="hl">Nonce Reuse</span></h1>
+    <p class="page-desc">
+      Two ECDSA signatures share the same secret nonce <code>k</code>.<br/>
+      This single mistake leaks the entire private key. Recover it.
+    </p>
+  </header>
+
+  <div class="stats-strip">
+    <div class="stat-box"><span class="stat-val">450</span><span class="stat-label">Points</span></div>
+    <div class="stat-box"><span class="stat-val red">Hard</span><span class="stat-label">Difficulty</span></div>
+    <div class="stat-box"><span class="stat-val amber">9</span><span class="stat-label">Solves</span></div>
+    <div class="stat-box"><span class="stat-val">Crypto</span><span class="stat-label">Category</span></div>
+  </div>
+
+  <div class="ec-layout">
+
+    <!-- ══════ LEFT ══════ -->
+    <div class="ec-left">
+
+      <!-- Signature data card -->
+      <div class="sec-divider"><h3>Intercepted Signature Data</h3></div>
+      <div class="sigdata-card">
+        <div class="sd-bar">
+          <span class="sd-dot sd-r"></span><span class="sd-dot sd-y"></span><span class="sd-dot sd-g"></span>
+          <span class="sd-title">ECDSA SIGNATURES // SAME NONCE k DETECTED</span>
+          <span class="sd-warn">⚠ r₁ = r₂</span>
+        </div>
+        <div class="sd-body">
+
+          <div class="curve-params">
+            <div class="cp-label">// CURVE PARAMETERS</div>
+            <div class="cp-row"><span class="cp-k">Curve</span><span class="cp-v">secp256k1-like (custom n)</span></div>
+            <div class="cp-row"><span class="cp-k">n</span><span class="cp-v cp-n">115792089237316195423570985008687907852837564279074904382605163141518161494337</span></div>
+            <div class="cp-row"><span class="cp-k">Note</span><span class="cp-v cp-note">r₁ = r₂ → same nonce k was used for both signatures ⚠</span></div>
+          </div>
+
+          <div class="sigs-grid">
+            <div class="sig-block" id="sig1">
+              <div class="sigb-header"><span class="sigb-badge">SIGNATURE 1</span></div>
+              <div class="sigb-row"><span class="sigb-k">r</span><span class="sigb-v sigb-r">1048512034789123498712034987120394871203948712039487120394871203948712</span></div>
+              <div class="sigb-row"><span class="sigb-k">s₁</span><span class="sigb-v sigb-s">8239478120394871203948712039487120394871203948712039487120394871203948</span></div>
+              <div class="sigb-row"><span class="sigb-k">h₁</span><span class="sigb-v sigb-h">4578120394871203948712039487120394871203948712039487120394871203948712</span></div>
+            </div>
+            <div class="sig-block" id="sig2">
+              <div class="sigb-header"><span class="sigb-badge">SIGNATURE 2</span></div>
+              <div class="sigb-row"><span class="sigb-k">r</span><span class="sigb-v sigb-r">1048512034789123498712034987120394871203948712039487120394871203948712</span></div>
+              <div class="sigb-row"><span class="sigb-k">s₂</span><span class="sigb-v sigb-s">2394871203948712039487120394871203948712039487120394871203948712039487</span></div>
+              <div class="sigb-row"><span class="sigb-k">h₂</span><span class="sigb-v sigb-h">9120394871203948712039487120394871203948712039487120394871203948712039</span></div>
+            </div>
+          </div>
+
+          <div class="r-equal-note">
+            <span class="ren-icon">🔴</span>
+            <span class="ren-text">r₁ = r₂ — identical r-values prove both signatures used the <strong>same nonce k</strong>. This leaks the private key.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Solver -->
+      <div class="sec-divider"><h3>Interactive Attack Solver</h3></div>
+      <div class="solver-wrap">
+
+        <!-- Step 1: recover k -->
+        <div class="slv-step" id="s1">
+          <div class="slv-hdr" onclick="toggleSlv(1)">
+            <div class="slv-n">01</div>
+            <div class="slv-ti"><strong>Recover Nonce k</strong><span>k = (h₁ − h₂) × (s₁ − s₂)⁻¹ mod n</span></div>
+            <span class="slv-tog" id="s1t">▶ Open</span>
+          </div>
+          <div class="slv-body hidden" id="s1b">
+            <p class="slv-p">From the two ECDSA equations, subtracting eliminates the private key d and lets us solve for k directly.</p>
+            <div class="math-derivation">
+              <div class="md-label">// MATHEMATICAL DERIVATION</div>
+              <div class="md-line">s₁ = k⁻¹(h₁ + r·d) mod n</div>
+              <div class="md-line">s₂ = k⁻¹(h₂ + r·d) mod n</div>
+              <div class="md-sep">→ subtract:</div>
+              <div class="md-line">s₁ − s₂ = k⁻¹(h₁ − h₂) mod n</div>
+              <div class="md-sep">→ solve for k:</div>
+              <div class="md-result">k = (h₁ − h₂) · (s₁ − s₂)⁻¹ mod n</div>
+            </div>
+            <button class="btn btn-primary slv-btn" id="s1-btn" onclick="runRecoverK()">⚡ Recover k</button>
+            <div class="slv-res hidden" id="s1-res"></div>
+          </div>
+        </div>
+
+        <!-- Step 2: recover d -->
+        <div class="slv-step locked" id="s2">
+          <div class="slv-hdr" onclick="toggleSlv(2)">
+            <div class="slv-n">02</div>
+            <div class="slv-ti"><strong>Recover Private Key d</strong><span>d = (s₁·k − h₁) · r⁻¹ mod n</span></div>
+            <span class="slv-tog" id="s2t">🔒</span>
+          </div>
+          <div class="slv-body hidden" id="s2b">
+            <p class="slv-p">Now that k is known, rearrange the ECDSA signing equation to solve for the private key d.</p>
+            <div class="math-derivation">
+              <div class="md-label">// ISOLATE d</div>
+              <div class="md-line">s₁ = k⁻¹(h₁ + r·d) mod n</div>
+              <div class="md-sep">→ rearrange:</div>
+              <div class="md-line">s₁·k = h₁ + r·d  mod n</div>
+              <div class="md-line">r·d  = s₁·k − h₁  mod n</div>
+              <div class="md-result">d = (s₁·k − h₁) · r⁻¹ mod n</div>
+            </div>
+            <button class="btn btn-primary slv-btn" id="s2-btn" onclick="runRecoverD()" disabled>▶ Recover Private Key d</button>
+            <div class="slv-res hidden" id="s2-res"></div>
+          </div>
+        </div>
+
+        <!-- Step 3: verify -->
+        <div class="slv-step locked" id="s3">
+          <div class="slv-hdr" onclick="toggleSlv(3)">
+            <div class="slv-n">03</div>
+            <div class="slv-ti"><strong>Verify Against Both Signatures</strong><span>Confirm d is correct: recompute s₁ and s₂</span></div>
+            <span class="slv-tog" id="s3t">🔒</span>
+          </div>
+          <div class="slv-body hidden" id="s3b">
+            <p class="slv-p">Sanity-check: use k and d to recompute s₁ and s₂ from scratch. Both must match exactly.</p>
+            <button class="btn btn-primary slv-btn" id="s3-btn" onclick="runVerify()" disabled>✓ Verify d is Correct</button>
+            <div class="slv-res hidden" id="s3-res"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Flag reveal -->
+      <div id="flag-reveal" class="flag-reveal hidden">
+        <div class="fr-glow"></div>
+        <div class="fr-icon">📐</div>
+        <h2 class="fr-title">Private Key Recovered!</h2>
+        <p class="fr-sub">One repeated nonce — the entire signing key is compromised. This is exactly how the PS3 was cracked.</p>
+        <div class="fr-box">
+          <span class="fr-lbl">🚩 CAPTURED FLAG — Private Key d</span>
+          <code class="fr-val" id="fr-val"></code>
+          <button class="btn-copy-sm" onclick="copyFlag()">📋 Copy</button>
+          <div class="copy-toast hidden" id="copy-toast">✓ Copied!</div>
+        </div>
+        <div class="fr-proof">
+          <div class="fp-row"><span class="fp-k">k (nonce)</span><span class="fp-v fp-k2">81601600685952438273783630961332820140394226819011112003822364831803761217274</span></div>
+          <div class="fp-row"><span class="fp-k">d (private key)</span><span class="fp-v fp-d">45108193149407035105904684046542306378302782122491144574305651107841380142253</span></div>
+          <div class="fp-row"><span class="fp-k">Verify s₁</span><span class="fp-v fp-ok">✓ matches given s₁</span></div>
+          <div class="fp-row"><span class="fp-k">Verify s₂</span><span class="fp-v fp-ok">✓ matches given s₂</span></div>
+        </div>
+      </div>
+
+    </div><!-- /left -->
+
+    <!-- ══════ RIGHT ══════ -->
+    <div class="ec-right">
+
+      <div class="sec-divider"><h3>Challenge Info</h3></div>
+      <div class="info-panel">
+        <div class="info-row"><span class="info-key">Scheme</span><span class="tag tag-red">ECDSA</span></div>
+        <div class="info-row"><span class="info-key">Vuln</span><span class="tag tag-amber">Nonce k Reuse</span></div>
+        <div class="info-row"><span class="info-key">Attack</span><code>Algebraic key recovery</code></div>
+        <div class="info-row"><span class="info-key">Category</span><span class="tag tag-green">Cryptography</span></div>
+        <div class="info-row"><span class="info-key">Points</span><span style="color:var(--accent);font-family:var(--font-hud)">450</span></div>
+      </div>
+
+      <div class="sec-divider"><h3>Background</h3></div>
+      <div class="desc-block">
+        <p>ECDSA's security depends entirely on generating a <strong>fresh random nonce k</strong> for every signature. If k is ever reused, the private key can be recovered with simple algebra — no brute force, no curve math.</p>
+        <br/>
+        <p>This vulnerability is what allowed the PS3's signing key to be extracted in 2010, and has broken countless cryptocurrency wallets.</p>
+      </div>
+
+      <!-- ECDSA primer -->
+      <div class="sec-divider"><h3>ECDSA Signing</h3></div>
+      <div class="ecdsa-primer">
+        <div class="ep-step"><div class="ep-n">1</div><div class="ep-t">Choose random nonce <code>k ∈ [1, n-1]</code></div></div>
+        <div class="ep-step"><div class="ep-n">2</div><div class="ep-t">Compute <code>R = k·G</code> (point on curve)</div></div>
+        <div class="ep-step"><div class="ep-n">3</div><div class="ep-t"><code>r = R.x mod n</code></div></div>
+        <div class="ep-step"><div class="ep-n">4</div><div class="ep-t"><code>s = k⁻¹(h + r·d) mod n</code></div></div>
+        <div class="ep-step ep-vuln"><div class="ep-n">⚠</div><div class="ep-t">If same k used twice → <strong>private key d is recoverable</strong></div></div>
+      </div>
+
+      <!-- Why reuse breaks it -->
+      <div class="sec-divider"><h3>Why Nonce Reuse Breaks It</h3></div>
+      <div class="why-card">
+        <div class="wc-eq">s₁ = k⁻¹(h₁ + r·d) mod n</div>
+        <div class="wc-eq">s₂ = k⁻¹(h₂ + r·d) mod n</div>
+        <div class="wc-sep">↓ subtract</div>
+        <div class="wc-eq wc-hi">s₁ − s₂ = k⁻¹(h₁ − h₂)</div>
+        <div class="wc-sep">↓ solve for k, then d</div>
+        <div class="wc-result">k and d both leak!</div>
+        <div class="wc-note">Two equations, two unknowns (k and d). The system is solvable with basic modular arithmetic — no elliptic curve operations needed.</div>
+      </div>
+
+      <!-- Real-world examples -->
+      <div class="sec-divider"><h3>Real-World Incidents</h3></div>
+      <div class="realworld-list">
+        <div class="rw-item">
+          <div class="rw-icon">🎮</div>
+          <div class="rw-txt"><strong>PlayStation 3 (2010)</strong><br/>Sony used a static k. GeoHot extracted the signing key and released it publicly.</div>
+        </div>
+        <div class="rw-item">
+          <div class="rw-icon">₿</div>
+          <div class="rw-txt"><strong>Bitcoin wallets (2013)</strong><br/>Android's SecureRandom weakness caused k reuse in Bitcoin wallets. Millions lost.</div>
+        </div>
+        <div class="rw-item">
+          <div class="rw-icon">🔑</div>
+          <div class="rw-txt"><strong>TLS certificates</strong><br/>Repeated nonces in ECDSA-signed TLS sessions have led to private key disclosure.</div>
+        </div>
+      </div>
+
+      <!-- Python solve script -->
+      <div class="sec-divider"><h3>Python Solve Script</h3></div>
+      <div class="code-block">
+        <div class="cb-lbl">// solution.py</div>
+        <pre class="cb-pre">n  = 115792089237316195423570985008687907852837564279074904382605163141518161494337
+
+r  = 1048512034789123498712034987120394871203948712039487120394871203948712
+s1 = 8239478120394871203948712039487120394871203948712039487120394871203948
+h1 = 4578120394871203948712039487120394871203948712039487120394871203948712
+s2 = 2394871203948712039487120394871203948712039487120394871203948712039487
+h2 = 9120394871203948712039487120394871203948712039487120394871203948712039
+
+# Step 1: recover nonce k
+k = (h1 - h2) * pow(s1 - s2, -1, n) % n
+
+# Step 2: recover private key d
+d = (s1 * k - h1) * pow(r, -1, n) % n
+
+# Step 3: verify
+k_inv = pow(k, -1, n)
+assert (k_inv * (h1 + r*d)) % n == s1
+assert (k_inv * (h2 + r*d)) % n == s2
+
+print(f"k = {k}")
+print(f"d = {d}")
+print(f"Flag: FlagVault{{{d}}}")</pre>
+      </div>
+
+      <!-- Hints -->
+      <div class="sec-divider"><h3>Hints</h3></div>
+      <div class="hints-list">
+        <div class="hint-card">
+          <div class="hint-header" onclick="toggleHint(1)"><span>💡 HINT 1</span><span class="hint-cost tag tag-green">−30 pts</span><span class="hint-toggle" id="h1t">▼ Reveal</span></div>
+          <div class="hint-body hidden" id="h1b">The r-values are identical: r₁ = r₂. In ECDSA, r = (k·G).x mod n. Identical r means identical k. Write out both signing equations and subtract them — k cancels d, letting you solve for k directly.</div>
+        </div>
+        <div class="hint-card">
+          <div class="hint-header" onclick="toggleHint(2)"><span>💡 HINT 2</span><span class="hint-cost tag tag-red">−60 pts</span><span class="hint-toggle" id="h2t">▼ Reveal</span></div>
+          <div class="hint-body hidden" id="h2b">k = (h₁ − h₂) × (s₁ − s₂)⁻¹ mod n. Once you have k, recover d: d = (s₁·k − h₁) × r⁻¹ mod n. In Python 3.8+: <code>pow(x, -1, n)</code> computes modular inverse.</div>
+        </div>
+        <div class="hint-card">
+          <div class="hint-header" onclick="toggleHint(3)"><span>💡 HINT 3</span><span class="hint-cost tag tag-purple">−90 pts</span><span class="hint-toggle" id="h3t">▼ Reveal</span></div>
+          <div class="hint-body hidden" id="h3b">The private key d is a 77-digit decimal number. Always reduce intermediate results mod n. Verify your answer by checking that <code>k⁻¹·(h₁ + r·d) mod n == s₁</code> and the same for s₂.</div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="sec-divider"><h3>Submit Flag</h3></div>
+      <div class="flag-submit-panel">
+        <div class="form-group flag-input-wrap">
+          <span class="flag-prefix">FlagVault{</span>
+          <input class="form-control" id="flag-input" type="text" placeholder="private_key_decimal" autocomplete="off"/>
+        </div>
+        <button class="btn btn-primary" onclick="submitFlag()" style="width:100%">&gt;_ SUBMIT FLAG</button>
+        <div class="submit-result" id="flag-result"></div>
+      </div>
+
+    </div><!-- /right -->
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-brand">FLAG<span>VAULT</span> CTF</div>
+  <div class="footer-copy">Challenge #C8 · Cryptography · ECDSA Nonce Reuse Attack</div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
