@@ -11,11 +11,6 @@
 
 <nav class="nav">
   <a href="#" class="nav-brand"><span class="bracket">[</span><span class="brand-flag">FLAG</span>VAULT<span class="bracket">]</span></a>
-  <ul class="nav-links">
-    <li><a href="#">Challenges</a></li>
-    <li><a href="#" class="active">ECDSA</a></li>
-    <li><a href="#">Scoreboard</a></li>
-  </ul>
   <div class="nav-status"><div class="status-dot"></div>CHALLENGE LIVE</div>
 </nav>
 
@@ -177,7 +172,6 @@
         <div class="info-row"><span class="info-key">Vuln</span><span class="tag tag-amber">Nonce k Reuse</span></div>
         <div class="info-row"><span class="info-key">Attack</span><code>Algebraic key recovery</code></div>
         <div class="info-row"><span class="info-key">Category</span><span class="tag tag-green">Cryptography</span></div>
-        <div class="info-row"><span class="info-key">Points</span><span style="color:var(--accent);font-family:var(--font-hud)">450</span></div>
       </div>
 
       <div class="sec-divider"><h3>Background</h3></div>
@@ -253,35 +247,6 @@ print(f"k = {k}")
 print(f"d = {d}")
 print(f"Flag: FlagVault{{{d}}}")</pre>
       </div>
-
-      <!-- Hints -->
-      <div class="sec-divider"><h3>Hints</h3></div>
-      <div class="hints-list">
-        <div class="hint-card">
-          <div class="hint-header" onclick="toggleHint(1)"><span>💡 HINT 1</span><span class="hint-cost tag tag-green">−30 pts</span><span class="hint-toggle" id="h1t">▼ Reveal</span></div>
-          <div class="hint-body hidden" id="h1b">The r-values are identical: r₁ = r₂. In ECDSA, r = (k·G).x mod n. Identical r means identical k. Write out both signing equations and subtract them — k cancels d, letting you solve for k directly.</div>
-        </div>
-        <div class="hint-card">
-          <div class="hint-header" onclick="toggleHint(2)"><span>💡 HINT 2</span><span class="hint-cost tag tag-red">−60 pts</span><span class="hint-toggle" id="h2t">▼ Reveal</span></div>
-          <div class="hint-body hidden" id="h2b">k = (h₁ − h₂) × (s₁ − s₂)⁻¹ mod n. Once you have k, recover d: d = (s₁·k − h₁) × r⁻¹ mod n. In Python 3.8+: <code>pow(x, -1, n)</code> computes modular inverse.</div>
-        </div>
-        <div class="hint-card">
-          <div class="hint-header" onclick="toggleHint(3)"><span>💡 HINT 3</span><span class="hint-cost tag tag-purple">−90 pts</span><span class="hint-toggle" id="h3t">▼ Reveal</span></div>
-          <div class="hint-body hidden" id="h3b">The private key d is a 77-digit decimal number. Always reduce intermediate results mod n. Verify your answer by checking that <code>k⁻¹·(h₁ + r·d) mod n == s₁</code> and the same for s₂.</div>
-        </div>
-      </div>
-
-      <!-- Submit -->
-      <div class="sec-divider"><h3>Submit Flag</h3></div>
-      <div class="flag-submit-panel">
-        <div class="form-group flag-input-wrap">
-          <span class="flag-prefix">FlagVault{</span>
-          <input class="form-control" id="flag-input" type="text" placeholder="private_key_decimal" autocomplete="off"/>
-        </div>
-        <button class="btn btn-primary" onclick="submitFlag()" style="width:100%">&gt;_ SUBMIT FLAG</button>
-        <div class="submit-result" id="flag-result"></div>
-      </div>
-
     </div><!-- /right -->
   </div>
 </div>
